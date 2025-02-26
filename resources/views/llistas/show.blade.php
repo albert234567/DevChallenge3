@@ -124,57 +124,75 @@
     </form>
 
     <hr>
-    {{-- Formulari per generar enllaç de compartir --}}
-    <h2>Compartir aquesta llista mitjançant un enllaç</h2>
-    <form action="{{ route('llistas.getShareLink', $llista->id) }}" method="POST" id="generate-share-link-form">
-        @csrf
-        <button type="submit" class="btn btn-secondary mt-3">Generar enllaç de compartir</button>
-    </form>
-
-    <div id="share-link-container" class="mt-3" style="display: none;">
-        <p><strong>Enllaç generat:</strong></p>
-        <input type="text" id="share-link" class="form-control" readonly>
-        <button class="btn btn-primary mt-2" onclick="copyToClipboard()">Copiar enllaç</button>
+        <h2>Copiar enllaç de la llista</h2>
+    <div id="shareLink">
+        <button type="button" id="generate-share-link-button" class="btn btn-secondary mt-3">Generar enllaç de compartir</button>
+        <div id="enlaceMarco" style="display: none;" class="mt-2">
+            <div class="input-group">
+                <input type="text" id="linkInput" class="form-control" readonly>
+                <div class="input-group-append">
+                    <button id="copyButton" class="btn btn-primary" type="button">Copiar</button>
+                </div>
+            </div>
+            <small id="copyStatus" class="text-success" style="display: none;">Enllaç copiat!</small>
+        </div>
     </div>
-</div>
 
+</div>
 @endsection
 
 @section('scripts')
-// Formulari per generar enllaç
-<form id="generate-share-link-form" action="/generate-link" data-id="123">
-    <button type="button" onclick="mostrarEnlace()">Generar Enlace</button>
-</form>
-
-<div id="enlaceMarco" style="display: none; margin-top: 10px;">
-    <a id="enlaceGenerado" href="#" target="_blank"></a>
-</div>
-
 <script>
-    function mostrarEnlace() {
-        // Envia una petició per obtenir l'enllaç generat
-        const form = document.getElementById('generate-share-link-form');
-        fetch(form.action, {
+document.addEventListener('DOMContentLoaded', function() {
+    const generateButton = document.getElementById('generate-share-link-button');
+    const copyButton = document.getElementById('copyButton');
+    const enlaceMarco = document.getElementById('enlaceMarco');
+    const linkInput = document.getElementById('linkInput');
+    const copyStatus = document.getElementById('copyStatus');
+    
+    // Gestionar la generació de l'enllaç
+    generateButton.addEventListener('click', function() {
+        fetch('{{ route('llistas.getShareLink', $llista->id) }}', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
                 'X-CSRF-TOKEN': '{{ csrf_token() }}'
-            },
-            body: JSON.stringify({ id: form.dataset.id })
+            }
         })
         .then(response => response.json())
         .then(data => {
-            // Si es genera l'enllaç, es mostra
-            if (data.link) {
-                const enlaceGenerado = document.getElementById("enlaceGenerado");
-                enlaceGenerado.href = data.link;
-                enlaceGenerado.innerText = data.link;
-                document.getElementById("enlaceMarco").style.display = "block";
-            } else {
-                alert('Error al generar el enlace.');
-            }
+            // Mostrar l'enllaç a l'input
+            linkInput.value = data;
+            enlaceMarco.style.display = 'block';
         })
-        .catch(error => console.error('Error:', error));
-    }
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Error al generar l\'enllaç.');
+        });
+    });
+    
+    // Gestionar la còpia al portapapers
+    copyButton.addEventListener('click', function() {
+        // Seleccionar el text de l'input
+        linkInput.select();
+        linkInput.setSelectionRange(0, 99999); // Per a dispositius mòbils
+        
+        // Copiar al portapapers
+        navigator.clipboard.writeText(linkInput.value)
+            .then(() => {
+                // Mostrar missatge de confirmació
+                copyStatus.style.display = 'block';
+                
+                // Amagar el missatge després de 2 segons
+                setTimeout(() => {
+                    copyStatus.style.display = 'none';
+                }, 2000);
+            })
+            .catch(err => {
+                console.error('No s\'ha pogut copiar el text: ', err);
+                alert('Error al copiar l\'enllaç.');
+            });
+    });
+});
 </script>
 @endsection

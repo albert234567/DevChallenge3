@@ -167,7 +167,7 @@ class LlistaController extends Controller
         }
 
         $link = route('llistas.view', ['id' => $id, 'token' => $llista->share_token]);
-        return response()->json(['link' => $link]);
+        return response()->json($link);
     }
 
     // Mostra una vista pública d'una llista compartida
