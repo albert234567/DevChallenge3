@@ -18,12 +18,12 @@ body {
 }
 
 .container {
-    max-width: 1200px;
+    max-width: 990px;
     margin: 20px auto;
-    padding: 30px;
+    padding: 20px;
     background-color: #FFFFFF;
-    border-radius: 12px;
-    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+    border-radius: 9px;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
 }
 
 h1 {
@@ -88,7 +88,7 @@ h2::after {
     color: #FFFFFF;
     border: none;
     border-radius: 5px;
-    padding: 12px 24px;
+    padding: 9px 15px;
     font-size: 16px;
     cursor: pointer;
     transition: background-color 0.3s, transform 0.2s;
@@ -228,7 +228,7 @@ input[type="text"]:focus, select:focus {
     display: inline-block;
     padding: 5px 10px;
     background-color: #f1f1f1;
-    color: gray;
+    color: #3c3c3c;
     border-radius: 5px;
     text-decoration: none;
     font-weight: bold;
@@ -236,7 +236,7 @@ input[type="text"]:focus, select:focus {
 }
 
 .table td .link-llista:hover {
-    background-color: black;
+    background-color: rgb(48, 48, 48);
     color: white;
     text-decoration: none;
     transform: scale(1.05);

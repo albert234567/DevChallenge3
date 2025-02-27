@@ -3,24 +3,19 @@
 @section('content')
 <div class="container">
     <h1 class="mb-4">{{ $llista->name }}</h1>
-    <hr>
-
- 
-    <h2 class="mb-4">Productes</h2>
-
  
     <ul class="list-group">
         @foreach ($llista->productes as $producte)
             <li class="list-group-item d-flex justify-content-between align-items-center">
                 <span class="letrasProductes">  
-                    {{ $producte->nom }}
+                    {{ $producte->name }}
                 
                 <span class="cantidadProducte">  
                     (Quantitat: {{ $producte->quantitat }})
                 </span>
                 </span>
                 <span class="categoriaProducte ms-2">  
-                   {{ $producte->categoria->name }}
+                   {{ $producte->categoria ? $producte->categoria->name : 'Sense categoria' }}
                 </span>
                 
                 <div>

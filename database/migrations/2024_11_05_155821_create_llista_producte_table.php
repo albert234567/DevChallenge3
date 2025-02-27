@@ -12,6 +12,7 @@ class CreateLlistaProducteTable extends Migration
             $table->id();
             $table->foreignId('llista_id')->constrained('llistas')->onDelete('cascade');
             $table->foreignId('producte_id')->constrained('productes')->onDelete('cascade');
+            $table->integer('quantitat')->default(1); // Afegit per guardar la quantitat
             $table->timestamps();
         });
     }

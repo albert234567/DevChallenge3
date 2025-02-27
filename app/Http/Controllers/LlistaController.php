@@ -88,15 +88,31 @@ class LlistaController extends Controller
     // Afegeix un producte a la llista
     public function agregarProducto(Request $request, Llista $llista)
     {
-        $producteId = $request->input('producte_id');
-
-        if (!$llista->productes()->where('producte_id', $producteId)->exists()) {
-            $llista->productes()->attach($producteId);
+        // Validar el nom i la quantitat del producte
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'quantitat' => 'required|integer|min:1',
+        ]);
+    
+        // Crear el producte o associar-lo amb la llista
+        $producte = new Producte();
+        $producte->name = $validated['name'];
+        $producte->quantitat = $validated['quantitat'];
+    
+        // Si tens una categoria, assigna-la
+        if ($request->has('categoria_id')) {
+            $producte->categoria_id = $request->categoria_id;
         }
-
-        return redirect()->route('llistas.show', $llista)->with('success', 'Producte afegit correctament!');
+    
+        // Desa el producte i associa-lo a la llista
+        $producte->save();
+        $llista->productes()->attach($producte);
+    
+        // Redirigeix a la pàgina amb un missatge de confirmació
+        return redirect()->route('llistas.show', $llista->id)
+                         ->with('success', 'Producte afegit correctament');
     }
-
+    
     // Elimina un producte de la llista
     public function quitarProducto(Llista $llista, Producte $producte)
     {

@@ -2,6 +2,7 @@
 
 @section('content')
 <div class="container">
+    @vite('resources/js/app.js')
 
     {{-- Missatges de success i error --}}
     @if(session('success'))
@@ -15,42 +16,42 @@
         </div>
     @endif
 
-    {{-- Botons per navegar a les llistes i productes --}}
+    {{-- Botons per navegar a les llistes --}}
     <div class="text-center mb-3">
         <a href="{{ route('llistas.index') }}" class="btn btn-custom mx-2">Anar a les llistes</a>
-        <a href="{{ route('productes.index') }}" class="btn btn-custom mx-2">Anar als productes</a>
     </div>
 
     {{-- Nom de la llista --}}
     <h1>{{ $llista->name }}</h1>
     <hr>
 
-    {{-- Formularis per marcar tots els productes com a completats, desmarcar o eliminar --}}
-    <form action="{{ route('llistas.markAllCompleted', $llista->id) }}" method="POST" style="display: inline;">
-        @csrf
-        <button type="submit" class="btn btn-success mb-3">Marcar tots els productes com a completats</button>
-    </form>
+    {{-- Botons per marcar/desmarcar els productes --}}
+    <div class="text-center mb-3">
+        <form action="{{ route('llistas.markAllCompleted', $llista->id) }}" method="POST" style="display: inline;">
+            @csrf
+            <button type="submit" class="btn btn-success btn-small mb-3">Marcar els productes</button>
+        </form>
 
-    <form action="{{ route('llistas.markAllUncompleted', $llista->id) }}" method="POST" style="display: inline;">
-        @csrf
-        <button type="submit" class="btn btn-warning mb-3">Desmarcar tots els productes com a no completats</button>
-    </form>
+        <form action="{{ route('llistas.markAllUncompleted', $llista->id) }}" method="POST" style="display: inline;">
+            @csrf
+            <button type="submit" class="btn btn-warning btn-small mb-3">Desmarcar els productes</button>
+        </form>
 
-    <form action="{{ route('llistas.deleteAllProducts', $llista->id) }}" method="POST" style="display: inline;">
-        @csrf
-        <button type="submit" class="btn btn-danger mb-3" onclick="return confirm('Estàs segur que vols eliminar tots els productes d\'aquesta llista?');">Eliminar tots els productes</button>
-    </form>
+        <form action="{{ route('llistas.deleteAllProducts', $llista->id) }}" method="POST" style="display: inline;">
+            @csrf
+            <button type="submit" class="btn btn-danger mb-3" onclick="return confirm('Estàs segur que vols eliminar tots els productes d\'aquesta llista?');">Eliminar tots els productes</button>
+        </form>
+    </div>
 
     {{-- Mostra el nombre de productes completats --}}
     <h2>Productes en aquesta llista: <span class="text-success">{{ $productes->where('completat', true)->count() }}</span> / {{ $productes->count() }} completats.</h2>
 
+    {{-- Taula amb els productes --}}
     <div class="card mb-4">
         <div class="card-body">
-            {{-- Si no hi ha productes, es mostra un missatge --}}
             @if($productes->isEmpty())
                 <p>No hi ha productes en aquesta llista.</p>
             @else
-                {{-- Taula amb els productes --}}
                 <table class="table table-striped">
                     <thead>
                         <tr>
@@ -68,7 +69,7 @@
                                     <form action="{{ route('llistas.completarProducto', [$llista->id, $producte->id]) }}" method="POST" style="display: inline;">
                                         @csrf
                                         <button type="submit" class="btn btn-link {{ $producte->completat ? 'text-completat' : '' }}">
-                                            {{ $producte->nom }}
+                                            {{ $producte->name }}
                                         </button>
                                     </form>
                                 </td>
@@ -84,9 +85,9 @@
                                     @endif
                                 </td>
                                 <td>
-                                     {{-- Botó per editar el producte --}}
-                                     <a href="{{ route('productes.edit', $producte) }}" class="btn btn-warning">Editar</a>
-                                   
+                                    {{-- Botó per editar el producte --}}
+                                    <a href="{{ route('productes.edit', $producte) }}" class="btn btn-warning">Editar</a>
+
                                     {{-- Formulari per eliminar un producte --}}
                                     <form action="{{ route('llistas.quitarProducto', [$llista->id, $producte->id]) }}" method="POST" style="display:inline;" onsubmit="return confirm('Estàs segur que vols eliminar aquest producte?');">
                                         @csrf
@@ -104,27 +105,26 @@
         </div>
     </div>
 
-    {{-- Formulari per afegir un producte a la llista --}}
-    <h2>Afegir producte a la llista</h2>
+    {{-- Formulari per afegir productes --}}
+    <h2>Agregar producte</h2>
     <form action="{{ route('llistas.agregarProducto', $llista->id) }}" method="POST" id="add-product-form">
         @csrf
         <div class="form-group">
-            <label for="producte_id">Selecciona un producte:</label>
-            <select name="producte_id" id="producte_id" class="form-control" required>
-                @if($productesDisponibles->isEmpty())
-                    <option value="">No hi ha productes disponibles</option>
-                @else
-                    @foreach ($productesDisponibles as $producte)
-                        <option value="{{ $producte->id }}">{{ $producte->nom }}</option>
-                    @endforeach
-                @endif
-            </select>
+            <label for="name">Nom del producte:</label>
+            <input type="text" name="name" id="name" class="form-control" required>
         </div>
+
+        <div class="form-group">
+            <label for="quantitat">Quantitat:</label>
+            <input type="number" name="quantitat" id="quantitat" class="form-control" required>
+        </div>
+
         <button type="submit" class="btn btn-primary mt-3" id="submit-product-btn">Afegir</button>
     </form>
 
     <hr>
-        <h2>Copiar enllaç de la llista</h2>
+
+    <h2>Copiar enllaç de la llista</h2>
     <div id="shareLink">
         <button type="button" id="generate-share-link-button" class="btn btn-secondary mt-3">Generar enllaç de compartir</button>
         <div id="enlaceMarco" style="display: none;" class="mt-2">
@@ -138,11 +138,8 @@
         </div>
     </div>
 
-</div>
-@endsection
-
-@section('scripts')
-<script>
+    
+    <script>
 document.addEventListener('DOMContentLoaded', function() {
     const generateButton = document.getElementById('generate-share-link-button');
     const copyButton = document.getElementById('copyButton');
@@ -195,4 +192,5 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 </script>
+
 @endsection
