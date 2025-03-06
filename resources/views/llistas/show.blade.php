@@ -119,6 +119,11 @@
             <input type="number" name="quantitat" id="quantitat" class="form-control" required>
         </div>
 
+        <div class="form-group">
+            <label for="categoria">Categoria:</label>
+            <input type="text" name="categoria" id="categoria" class="form-control">
+        </div>
+
         <button type="submit" class="btn btn-primary mt-3" id="submit-product-btn">Afegir</button>
     </form>
 

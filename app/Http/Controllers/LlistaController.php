@@ -73,16 +73,23 @@ class LlistaController extends Controller
         return redirect()->route('llistas.show', $llista->id)->with('success', 'Llista compartida correctament!');
     }
 
-    // Mostra els detalls d'una llista
     public function show(Llista $llista)
     {
         $users = User::all();
         $productesDisponibles = Producte::whereDoesntHave('llistas', function ($query) use ($llista) {
             $query->where('llistas.id', $llista->id);
         })->get();
-        $productes = $llista->productes;
-
-        return view('llistas.show', compact('llista', 'productes', 'productesDisponibles', 'users'));
+        
+        // Obté els productes ordenats per categoria
+        $productes = $llista->productes()
+            ->join('categorias', 'productes.categoria_id', '=', 'categorias.id', 'left')
+            ->select('productes.*', 'categorias.name as categoria_name')
+            ->orderBy('categorias.name', 'asc')
+            ->get();
+        
+        $categories = \App\Models\Categoria::all();
+    
+        return view('llistas.show', compact('llista', 'productes', 'categories'));
     }
 
     // Afegeix un producte a la llista
@@ -92,27 +99,32 @@ class LlistaController extends Controller
         $validated = $request->validate([
             'name' => 'required|string|max:255',
             'quantitat' => 'required|integer|min:1',
+            'categoria' => 'nullable|string|max:255', // Valida la categoria com a text
         ]);
     
-        // Crear el producte o associar-lo amb la llista
+        // Crear el producte
         $producte = new Producte();
         $producte->name = $validated['name'];
         $producte->quantitat = $validated['quantitat'];
     
-        // Si tens una categoria, assigna-la
-        if ($request->has('categoria_id')) {
-            $producte->categoria_id = $request->categoria_id;
+        // Si s'ha proporcionat una categoria
+        if ($request->filled('categoria')) {
+            // Busca la categoria per nom o crea'n una de nova
+            $categoria = \App\Models\Categoria::firstOrCreate(
+                ['name' => $request->categoria]
+            );
+            $producte->categoria_id = $categoria->id;
         }
     
-        // Desa el producte i associa-lo a la llista
+        // Desa el producte i associa'l a la llista
         $producte->save();
         $llista->productes()->attach($producte);
     
-        // Redirigeix a la pàgina amb un missatge de confirmació
+        // Redirigeix amb missatge de confirmació
         return redirect()->route('llistas.show', $llista->id)
                          ->with('success', 'Producte afegit correctament');
     }
-    
+
     // Elimina un producte de la llista
     public function quitarProducto(Llista $llista, Producte $producte)
     {

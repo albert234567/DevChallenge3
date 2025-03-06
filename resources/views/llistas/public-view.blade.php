@@ -4,8 +4,14 @@
 <div class="container">
     <h1 class="mb-4">{{ $llista->name }}</h1>
  
+    @php
+        $productesSorted = $llista->productes->sortBy(function ($producte) {
+            return $producte->categoria ? $producte->categoria->name : 'ZZZZZ'; // 'ZZZZZ' per a què els "Sense categoria" apareguin al final
+        });
+    @endphp
+
     <ul class="list-group">
-        @foreach ($llista->productes as $producte)
+        @foreach ($productesSorted as $producte)
             <li class="list-group-item d-flex justify-content-between align-items-center">
                 <span class="letrasProductes">  
                     {{ $producte->name }}
@@ -21,12 +27,12 @@
                 <div>
                     <a href="{{ route('productes.edit', $producte) }}" class="btn btn-warning btn-sm me-2">Editar</a>
                     <form action="{{ route('llistas.quitarProducto', [$llista->id, $producte->id]) }}" method="POST" style="display:inline;" onsubmit="return confirm('Estàs segur que vols eliminar aquest producte?');">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button type="submit" class="btn btn-danger btn-sm">
-                                            <i class="bi bi-trash"></i> Eliminar
-                                        </button>
-                                   </form>
+                        @csrf
+                        @method('DELETE')
+                        <button type="submit" class="btn btn-danger btn-sm">
+                            <i class="bi bi-trash"></i> Eliminar
+                        </button>
+                    </form>
                 </div>
             </li>
         @endforeach
