@@ -2,12 +2,49 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Llista;
 use App\Models\Producte;
-use App\Models\Categoria;
+use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\LlistaInvitationMail;
 
 class ProducteController extends Controller
 {
+
+    
+    public function update(Request $request, Llista $llista, Producte $producte)
+    {
+        // Validació
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'quantitat' => 'required|integer|min:0',
+            'categoria_nom' => 'nullable|string|max:255',
+        ]);
+    
+        // Actualitzar el producte
+        $producte->update([
+            'name' => $validated['name'],
+            'quantitat' => $validated['quantitat'],
+            'categoria_nom' => $validated['categoria_nom'],
+        ]);
+    
+        // Redirigir (assegura't de passar el paràmetre correctament)
+        return redirect()->route('llistas.show', ['llista' => $llista->id])
+                         ->with('success', 'Producte actualitzat correctament!');
+    }
+      
+    
+
+// Afegir també el mètode edit
+public function edit(Llista $llista, Producte $producte)
+{
+    return view('productes.edit', compact('llista', 'producte'));
+}
+    
     // Mostra tots els productes amb la seva categoria
     public function index()
     {
@@ -53,29 +90,6 @@ class ProducteController extends Controller
         return redirect()->route('productes.index')->with('success', 'Producte creat correctament!');
     }
 
-    // Mostra el formulari per editar un producte existent
-    public function edit(Producte $producte)
-    {
-        $categories = Categoria::all(); // Obtenim totes les categories
-        return view('productes.edit', compact('producte', 'categories'));
-    }
-
-    // Actualitza les dades d'un producte existent
-    public function update(Request $request, Producte $producte)
-    {
-        // Validació de les dades d'entrada
-        $request->validate([
-            'nom' => 'required|string|max:255',
-            'categoria_id' => 'required|exists:categorias,id',
-        ]);
-
-        // Actualització del producte
-        $producte->update($request->all());
-
-        // Redirigeix amb missatge d'èxit
-        return redirect()->route('productes.index')->with('success', 'Producte actualitzat correctament!');
-    }
-
     // Elimina un producte
     public function destroy(Producte $producte)
     {
@@ -91,4 +105,5 @@ class ProducteController extends Controller
 
         return redirect()->route('productes.index')->with('success', 'Producte actualitzat correctament!');
     }
+    
 }

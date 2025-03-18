@@ -11,17 +11,17 @@ class Producte extends Model
 
     protected $table = 'productes'; // Nom de la tabla
 
-    protected $fillable = ['nom', 'categoria_id', 'completat', 'llista_id', 'quantitat'];
-
+    protected $fillable = ['name', 'categoria_nom', 'quantitat', 'llista_id'];
+    
     public function categoria()
     {
         return $this->belongsTo(Categoria::class); // Relació amb Categoria
     }
 
-    public function llistas(): BelongsToMany
-{
-    return $this->belongsToMany(Llista::class, 'llista_producte');
-}
+    public function llistas()
+    {
+        return $this->belongsTo(Llista::class, 'llista_id');
+    }
 
     public function marcarCompletat()
     {
@@ -34,5 +34,11 @@ class Producte extends Model
         $this->completat = false;
         $this->save();
     }
+
+
+    // Desactivar les dates automàtiques
+    public $timestamps = false;
+
+
 
 }

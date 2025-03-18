@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
 use App\Mail\LlistaInvitationMail;
 
+
 class LlistaController extends Controller
 {
     // Llista totes les llistes
@@ -44,16 +45,23 @@ class LlistaController extends Controller
         return view('llistas.edit', compact('llista'));
     }
 
-    // Actualitza una llista
     public function update(Request $request, Llista $llista)
     {
+        // Validació del nom de la llista
         $request->validate([
             'name' => 'required|string|max:255',
         ]);
-
-        $llista->update($request->all());
-        return redirect()->route('llistas.index')->with('success', 'Llista actualitzada correctament!');
+    
+        // Actualitzar el nom de la llista
+        $llista->name = $request->name;
+        $llista->save();
+    
+        // Redirigir a la vista de la llista amb un missatge d'èxit
+        return redirect()->route('llistas.index')
+                         ->with('success', 'Llista actualitzada correctament!');
     }
+    
+    
 
     // Elimina una llista
     public function destroy(Llista $llista)
@@ -73,57 +81,58 @@ class LlistaController extends Controller
         return redirect()->route('llistas.show', $llista->id)->with('success', 'Llista compartida correctament!');
     }
 
-    public function show(Llista $llista)
-    {
-        $users = User::all();
-        $productesDisponibles = Producte::whereDoesntHave('llistas', function ($query) use ($llista) {
-            $query->where('llistas.id', $llista->id);
-        })->get();
-        
-        // Obté els productes ordenats per categoria
-        $productes = $llista->productes()
-            ->join('categorias', 'productes.categoria_id', '=', 'categorias.id', 'left')
-            ->select('productes.*', 'categorias.name as categoria_name')
-            ->orderBy('categorias.name', 'asc')
-            ->get();
-        
-        $categories = \App\Models\Categoria::all();
+public function show(Llista $llista)
+{
+    $users = User::all();
+
+    // Obtenir els productes que no estan associats a la llista
+    $productesDisponibles = Producte::whereDoesntHave('llistas', function ($query) use ($llista) {
+        $query->where('llistas.id', $llista->id);
+    })->get();
     
-        return view('llistas.show', compact('llista', 'productes', 'categories'));
+    // Obtenir els productes associats a la llista i ordenar-los per categoria_nom
+    $productes = $llista->productes()
+        ->select('productes.*', 'productes.categoria_nom as categoria_name') // Afegim categoria_nom directament
+        ->orderBy('productes.categoria_nom', 'asc') // Ordenem per categoria_nom
+        ->get();
+    
+    // Obtenir totes les categories disponibles
+    $categories = \App\Models\Categoria::all();
+
+    return view('llistas.show', compact('llista', 'productes', 'categories'));
+}
+
+
+// Afegeix un producte a la llista
+public function agregarProducto(Request $request, Llista $llista)
+{
+    // Validar el nom i la quantitat del producte
+    $validated = $request->validate([
+        'name' => 'required|string|max:255',
+        'quantitat' => 'required|integer|min:1',
+        'categoria' => 'nullable|string|max:255', // Valida la categoria com a text
+    ]);
+
+    // Crear el producte
+    $producte = new Producte();
+    $producte->name = $validated['name'];
+    $producte->quantitat = $validated['quantitat'];
+
+    // Si s'ha proporcionat una categoria
+    if ($request->filled('categoria')) {
+        // Assignar el nom de la categoria directament al producte
+        $producte->categoria_nom = $request->categoria;
     }
 
-    // Afegeix un producte a la llista
-    public function agregarProducto(Request $request, Llista $llista)
-    {
-        // Validar el nom i la quantitat del producte
-        $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'quantitat' => 'required|integer|min:1',
-            'categoria' => 'nullable|string|max:255', // Valida la categoria com a text
-        ]);
-    
-        // Crear el producte
-        $producte = new Producte();
-        $producte->name = $validated['name'];
-        $producte->quantitat = $validated['quantitat'];
-    
-        // Si s'ha proporcionat una categoria
-        if ($request->filled('categoria')) {
-            // Busca la categoria per nom o crea'n una de nova
-            $categoria = \App\Models\Categoria::firstOrCreate(
-                ['name' => $request->categoria]
-            );
-            $producte->categoria_id = $categoria->id;
-        }
-    
-        // Desa el producte i associa'l a la llista
-        $producte->save();
-        $llista->productes()->attach($producte);
-    
-        // Redirigeix amb missatge de confirmació
-        return redirect()->route('llistas.show', $llista->id)
-                         ->with('success', 'Producte afegit correctament');
-    }
+    // Desa el producte i associa'l a la llista
+    $producte->save();
+    $llista->productes()->attach($producte);
+
+    // Redirigeix amb missatge de confirmació
+    return redirect()->route('llistas.show', $llista->id)
+                     ->with('success', 'Producte afegit correctament');
+}
+
 
     // Elimina un producte de la llista
     public function quitarProducto(Llista $llista, Producte $producte)
@@ -135,11 +144,14 @@ class LlistaController extends Controller
     // Marca un producte com completat/no completat
     public function completarProducto(Llista $llista, Producte $producte)
     {
+        // Toggle (canvia l'estat de completat)
         $producte->completat = !$producte->completat;
-        $producte->save();
+        $producte->save();  // Desa el canvi a la base de dades
 
+        // Redirigeix l'usuari a la vista de la llista amb un missatge de confirmació
         return redirect()->route('llistas.show', $llista)->with('success', 'Estat del producte actualitzat!');
     }
+
 
     // Convida un usuari a compartir la llista
     public function inviteUser(Request $request, Llista $llista)
@@ -207,4 +219,5 @@ class LlistaController extends Controller
 
         return view('llistas.public-view', compact('llista'));
     }
+
 }

@@ -78,15 +78,16 @@
                                 </td>
                                 <td>
                                     {{-- Mostra la categoria del producte o un missatge si no en té --}}
-                                    @if($producte->categoria)
-                                        <span class="badge badge-info">{{ $producte->categoria->name }}</span>
+                                    @if($producte->categoria_nom)
+                                        <span class="badge badge-info">{{ $producte->categoria_nom }}</span>
                                     @else
                                         <span class="badge badge-secondary">Sense categoria</span>
                                     @endif
                                 </td>
+
                                 <td>
                                     {{-- Botó per editar el producte --}}
-                                    <a href="{{ route('productes.edit', $producte) }}" class="btn btn-warning">Editar</a>
+                                    <a href="{{ route('productes.editProd', [$llista->id, $producte->id]) }}" class="btn btn-warning">Editar</a>
 
                                     {{-- Formulari per eliminar un producte --}}
                                     <form action="{{ route('llistas.quitarProducto', [$llista->id, $producte->id]) }}" method="POST" style="display:inline;" onsubmit="return confirm('Estàs segur que vols eliminar aquest producte?');">
