@@ -27,19 +27,19 @@
 
     {{-- Botons per marcar/desmarcar els productes --}}
     <div class="text-center mb-3">
-        <form action="{{ route('llistas.markAllCompleted', $llista->id) }}" method="POST" style="display: inline;">
+        <form action="{{ route('llistas.markAllCompleted', $llista->id) }}" method="POST" class="boton-espaiat">
             @csrf
-            <button type="submit" class="btn btn-success btn-small mb-3">Marcar els productes</button>
+            <button type="submit" class="btn btn-success btn-small">Marcar els productes</button>
         </form>
 
-        <form action="{{ route('llistas.markAllUncompleted', $llista->id) }}" method="POST" style="display: inline;">
+        <form action="{{ route('llistas.markAllUncompleted', $llista->id) }}" method="POST" class="boton-espaiat">
             @csrf
-            <button type="submit" class="btn btn-warning btn-small mb-3">Desmarcar els productes</button>
+            <button type="submit" class="btn btn-warning btn-small">Desmarcar els productes</button>
         </form>
 
-        <form action="{{ route('llistas.deleteAllProducts', $llista->id) }}" method="POST" style="display: inline;">
+        <form action="{{ route('llistas.deleteAllProducts', $llista->id) }}" method="POST" class="boton-espaiat">
             @csrf
-            <button type="submit" class="btn btn-danger mb-3" onclick="return confirm('Estàs segur que vols eliminar tots els productes d\'aquesta llista?');">Eliminar tots els productes</button>
+            <button type="submit" class="btn btn-danger" onclick="return confirm('Estàs segur que vols eliminar tots els productes d\'aquesta llista?');">Eliminar tots els productes</button>
         </form>
     </div>
 
@@ -58,6 +58,7 @@
                             <th>Nom del Producte</th>
                             <th>Quantitat</th>
                             <th>Categoria</th>
+                            <th>Estat</th> {{-- Nova columna per l'estat completat --}}
                             <th>Accions</th>
                         </tr>
                     </thead>
@@ -82,6 +83,14 @@
                                         <span class="badge badge-info">{{ $producte->categoria_nom }}</span>
                                     @else
                                         <span class="badge badge-secondary">Sense categoria</span>
+                                    @endif
+                                </td>
+                                <td>
+                                    {{-- Mostra una creu o un cercle depenent de si el producte està completat --}}
+                                    @if($producte->completat)
+                                        <span class="text-success"><i class="bi bi-check-circle">O</i></span>
+                                    @else
+                                        <span class="text-danger"><i class="bi bi-x-circle"></i>X</span>
                                     @endif
                                 </td>
 
@@ -144,59 +153,58 @@
         </div>
     </div>
 
-    
     <script>
-document.addEventListener('DOMContentLoaded', function() {
-    const generateButton = document.getElementById('generate-share-link-button');
-    const copyButton = document.getElementById('copyButton');
-    const enlaceMarco = document.getElementById('enlaceMarco');
-    const linkInput = document.getElementById('linkInput');
-    const copyStatus = document.getElementById('copyStatus');
-    
-    // Gestionar la generació de l'enllaç
-    generateButton.addEventListener('click', function() {
-        fetch('{{ route('llistas.getShareLink', $llista->id) }}', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': '{{ csrf_token() }}'
-            }
-        })
-        .then(response => response.json())
-        .then(data => {
-            // Mostrar l'enllaç a l'input
-            linkInput.value = data;
-            enlaceMarco.style.display = 'block';
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            alert('Error al generar l\'enllaç.');
+    document.addEventListener('DOMContentLoaded', function() {
+        const generateButton = document.getElementById('generate-share-link-button');
+        const copyButton = document.getElementById('copyButton');
+        const enlaceMarco = document.getElementById('enlaceMarco');
+        const linkInput = document.getElementById('linkInput');
+        const copyStatus = document.getElementById('copyStatus');
+
+        // Gestionar la generació de l'enllaç
+        generateButton.addEventListener('click', function() {
+            fetch('{{ route('llistas.getShareLink', $llista->id) }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                // Mostrar l'enllaç a l'input
+                linkInput.value = data;
+                enlaceMarco.style.display = 'block';
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Error al generar l\'enllaç.');
+            });
+        });
+
+        // Gestionar la còpia al portapapers
+        copyButton.addEventListener('click', function() {
+            // Seleccionar el text de l'input
+            linkInput.select();
+            linkInput.setSelectionRange(0, 99999); // Per a dispositius mòbils
+
+            // Copiar al portapapers
+            navigator.clipboard.writeText(linkInput.value)
+                .then(() => {
+                    // Mostrar missatge de confirmació
+                    copyStatus.style.display = 'block';
+
+                    // Amagar el missatge després de 2 segons
+                    setTimeout(() => {
+                        copyStatus.style.display = 'none';
+                    }, 2000);
+                })
+                .catch(err => {
+                    console.error('No s\'ha pogut copiar el text: ', err);
+                    alert('Error al copiar l\'enllaç.');
+                });
         });
     });
-    
-    // Gestionar la còpia al portapapers
-    copyButton.addEventListener('click', function() {
-        // Seleccionar el text de l'input
-        linkInput.select();
-        linkInput.setSelectionRange(0, 99999); // Per a dispositius mòbils
-        
-        // Copiar al portapapers
-        navigator.clipboard.writeText(linkInput.value)
-            .then(() => {
-                // Mostrar missatge de confirmació
-                copyStatus.style.display = 'block';
-                
-                // Amagar el missatge després de 2 segons
-                setTimeout(() => {
-                    copyStatus.style.display = 'none';
-                }, 2000);
-            })
-            .catch(err => {
-                console.error('No s\'ha pogut copiar el text: ', err);
-                alert('Error al copiar l\'enllaç.');
-            });
-    });
-});
-</script>
+    </script>
 
 @endsection

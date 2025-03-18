@@ -1,3 +1,4 @@
+
 .text-completat {
     text-decoration: line-through;
     text-decoration-color: black;
@@ -18,7 +19,7 @@ body {
 }
 
 .container {
-    max-width: 990px;
+    max-width: 900px;
     margin: 20px auto;
     padding: 20px;
     background-color: #FFFFFF;
@@ -307,3 +308,35 @@ button:hover {
     padding-left: 0;
     display: inline;
 }
+
+/* Elimina la línia sota els enllaços i botons */
+a, .btn {
+    text-decoration: none !important;
+}
+
+
+.text-center {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.boton-espaiat {
+    display: inline-block;
+    margin-right: 10px;  /* Afegir espai entre formularis */
+}
+
+/* Assegura que els inputs no siguin tan llargs */
+input.form-control {
+    width: 50%; /* Pots ajustar el percentatge a la teva mida desitjada */
+    max-width: 400px; /* Màxim amplada de 400px per evitar que siguin massa grans en pantalles àmplies */
+    border-radius: 0.25rem; /* Afegeix un petit arrodoniment de les vores */
+    border: 1px solid #ccc; /* Color de la vora uniforme */
+    padding: 0.375rem 0.75rem; /* Padding per a un bon espai intern */
+}
+
+/* Opcional: espai entre els camps */
+#add-product-form .form-group {
+    margin-bottom: 15px;
+}
+
