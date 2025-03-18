@@ -1,23 +1,51 @@
 <?php
 
+use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 
 use App\Http\Controllers\LlistaController;
 use App\Http\Controllers\CategoriaController;
 use App\Http\Controllers\ProducteController;
 
-// Pàgina inicial
+
+/*
+|--------------------------------------------------------------------------
+| Web Routes
+|--------------------------------------------------------------------------
+|
+| Here is where you can register web routes for your application. These
+| routes are loaded by the RouteServiceProvider and all of them will
+| be assigned to the "web" middleware group. Make something great!
+|
+*/
+
+// Ruta d'inici, que carrega la vista 'welcome'
 Route::get('/', function () {
-    return redirect()->route('llistas.index');
+    return view('welcome');
 });
 
-// CRUD bàsic
+// Redirigeix a 'llistas.index' després de l'inici de sessió
+Route::middleware(['auth', 'verified'])->get('/home', [LlistaController::class, 'index'])->name('llistas.index');
+
+// Rutes que només són accessibles per usuaris autenticats
+Route::middleware(['auth', 'verified'])->group(function () {
+    Route::get('/llistas', [LlistaController::class, 'index'])->name('llistas.index');
+    Route::resource('llistas', LlistaController::class);
+});
+
+// Rutes per al perfil d'usuari
+Route::middleware('auth')->group(function () {
+    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
+    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
+    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+});
+
+// CRUD bàsic per a llistes, categories i productes
 Route::resource('llistas', LlistaController::class);
 Route::resource('categorias', CategoriaController::class);
 Route::resource('productes', ProducteController::class);
 
-// Accions sobre llistes (personalitzades)
-// Completar producte dins d'una llista
+// Accions sobre productes dins de llistes
 Route::post('/llistas/{llista}/completar/{producte}', [LlistaController::class, 'completarProducto'])->name('llistas.completarProducto');
 
 // Generar enllaç per compartir
@@ -40,3 +68,5 @@ Route::put('/llistas/{llista}/productes/{producte}', [ProducteController::class,
 
 // Ruta independent d'edició de productes (fora de llista)
 Route::get('/productes/{producte}/edit', [ProducteController::class, 'edit'])->name('productes.edit');
+
+require __DIR__.'/auth.php';

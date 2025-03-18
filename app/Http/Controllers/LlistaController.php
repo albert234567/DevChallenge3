@@ -15,6 +15,7 @@ use App\Mail\LlistaInvitationMail;
 
 class LlistaController extends Controller
 {
+    
     // Llista totes les llistes
     public function index()
     {
