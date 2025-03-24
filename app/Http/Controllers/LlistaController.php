@@ -16,12 +16,16 @@ use App\Mail\LlistaInvitationMail;
 class LlistaController extends Controller
 {
     
-    // Llista totes les llistes
     public function index()
     {
-        $llistas = Llista::all();
+        // Filtra les llistes de l'usuari autenticat
+        $llistas = Llista::where('created_by', auth()->id())->get();
+    
         return view('llistas.index', compact('llistas'));
     }
+    
+
+
 
     // Mostra el formulari per crear una llista
     public function create()

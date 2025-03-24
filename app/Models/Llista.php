@@ -29,5 +29,11 @@ public function sharedUsers()
         return $this->belongsToMany(Producte::class, 'llista_producte');
     }
 
+    public function user()
+    {
+        return $this->belongsTo(User::class, 'created_by');
+    }
+    
+
     
 }

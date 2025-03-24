@@ -59,4 +59,10 @@ public function canAccessSharedList(Llista $llista)
     return $this->sharedLists()->where('llista_id', $llista->id)->exists();
 }
 
+public function llista()
+{
+    return $this->hasMany(Llista::class, 'created_by');
+}
+
+
 }
