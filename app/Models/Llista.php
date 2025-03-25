@@ -13,6 +13,7 @@ class Llista extends Model
 
     protected $fillable = [
         'name',
+        'created_by',
         'share_token' 
     ];
 

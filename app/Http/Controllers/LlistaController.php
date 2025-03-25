@@ -24,9 +24,6 @@ class LlistaController extends Controller
         return view('llistas.index', compact('llistas'));
     }
     
-
-
-
     // Mostra el formulari per crear una llista
     public function create()
     {
@@ -39,10 +36,15 @@ class LlistaController extends Controller
         $request->validate([
             'name' => 'required|string|max:255',
         ]);
-
-        Llista::create($request->all());
+    
+        Llista::create([
+            'name' => $request->name,
+            'created_by' => auth()->id(), // Assigna l'usuari actual com a creador de la llista
+        ]);
+    
         return redirect()->route('llistas.index')->with('success', 'Llista creada correctament!');
     }
+    
 
     // Mostra el formulari per editar una llista
     public function edit(Llista $llista)
